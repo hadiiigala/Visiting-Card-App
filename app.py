@@ -1,11 +1,12 @@
 import streamlit as st
 from PIL import Image
-import pytesseract
+# import pytesseract
+import easyocr
 import re
 import mysql.connector
 
 # Path to Tesseract executable (change if using Linux/Mac)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # DB connection
 def connect_db():
@@ -17,8 +18,9 @@ def connect_db():
     )
 
 def extract_text_from_image(image_path):
-    img = Image.open(image_path)
-    return pytesseract.image_to_string(img)
+    reader = easyocr.Reader(['en'])
+    result = reader.readtext(image_path)
+    return " ".join([text[1] for text in result])
 
 def extract_fields(text):
     lines = [line.strip() for line in text.split("\n") if line.strip()]
