@@ -4,19 +4,27 @@ from PIL import Image
 # import easyocr
 import requests
 import re
-import mysql.connector
+# import mysql.connector
+import sqlite3
+
 
 # Path to Tesseract executable (change if using Linux/Mac)
 # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 # DB connection
 def connect_db():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="pass@123",
-        database="Experiment10"
-    )
+    conn = sqlite3.connect("visiting_cards.db")
+    conn.execute('''CREATE TABLE IF NOT EXISTS visiting_cards (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT,
+        phone TEXT,
+        company TEXT,
+        designation TEXT,
+        address TEXT
+    )''')
+    return conn
+
 
 def extract_text_from_image(image_path):
     api_key = "K86782520788957"  # Replace with your key from ocr.space
@@ -152,15 +160,36 @@ def extract_fields(text):
     
     return extracted_data
 
+# def insert_into_db(data):
+#     conn = connect_db()
+#     cursor = conn.cursor()
+#     sql = """INSERT INTO visiting_cards (name, email, phone, company, designation, address)
+#              VALUES (%s, %s, %s, %s, %s, %s)"""
+#     values = (data['name'], data['email'], data['phone'], data['company'], data['designation'], data['address'])
+#     cursor.execute(sql, values)
+#     conn.commit()
+#     conn.close()
+
 def insert_into_db(data):
     conn = connect_db()
     cursor = conn.cursor()
+    
     sql = """INSERT INTO visiting_cards (name, email, phone, company, designation, address)
-             VALUES (%s, %s, %s, %s, %s, %s)"""
-    values = (data['name'], data['email'], data['phone'], data['company'], data['designation'], data['address'])
+             VALUES (?, ?, ?, ?, ?, ?)"""
+    
+    values = (
+        data['name'],
+        data['email'],
+        data['phone'],
+        data['company'],
+        data['designation'],
+        data['address']
+    )
+    
     cursor.execute(sql, values)
     conn.commit()
     conn.close()
+
 
 # Streamlit UI
 st.title("Visiting Card Extractor - MySQL Integration")
