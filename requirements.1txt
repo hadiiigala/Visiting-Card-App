@@ -1,4 +1,5 @@
 streamlit
-easyocr
+requests
 Pillow
 mysql-connector-python
+
