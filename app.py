@@ -1,7 +1,8 @@
 import streamlit as st
 from PIL import Image
 # import pytesseract
-import easyocr
+# import easyocr
+import requests
 import re
 import mysql.connector
 
@@ -18,9 +19,18 @@ def connect_db():
     )
 
 def extract_text_from_image(image_path):
-    reader = easyocr.Reader(['en'])
-    result = reader.readtext(image_path)
-    return " ".join([text[1] for text in result])
+    api_key = "K86782520788957"  # Replace with your key from ocr.space
+    with open(image_path, 'rb') as f:
+        r = requests.post(
+            'https://api.ocr.space/parse/image',
+            files={'filename': f},
+            data={'apikey': api_key, 'language': 'eng'},
+        )
+    result = r.json()
+    if result['IsErroredOnProcessing']:
+        return ""
+    return result['ParsedResults'][0]['ParsedText']
+
 
 def extract_fields(text):
     lines = [line.strip() for line in text.split("\n") if line.strip()]
